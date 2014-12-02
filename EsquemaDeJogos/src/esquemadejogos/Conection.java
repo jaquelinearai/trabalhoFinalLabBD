@@ -17,12 +17,59 @@ public class Conection extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        dialogCamposEmBranco = new javax.swing.JDialog();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        buttonErroCamposEmBranco = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         textUser = new javax.swing.JTextField();
         textPass = new javax.swing.JPasswordField();
-        jButton1 = new javax.swing.JButton();
+        buttonLogin = new javax.swing.JButton();
+
+        dialogCamposEmBranco.setMinimumSize(new java.awt.Dimension(350, 150));
+
+        jLabel3.setText("Usuario ou senha inválidos.");
+
+        jLabel4.setText("Tente novamente.");
+
+        buttonErroCamposEmBranco.setText("Ok");
+        buttonErroCamposEmBranco.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonErroCamposEmBrancoActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout dialogCamposEmBrancoLayout = new javax.swing.GroupLayout(dialogCamposEmBranco.getContentPane());
+        dialogCamposEmBranco.getContentPane().setLayout(dialogCamposEmBrancoLayout);
+        dialogCamposEmBrancoLayout.setHorizontalGroup(
+            dialogCamposEmBrancoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dialogCamposEmBrancoLayout.createSequentialGroup()
+                .addGroup(dialogCamposEmBrancoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(dialogCamposEmBrancoLayout.createSequentialGroup()
+                        .addGap(121, 121, 121)
+                        .addGroup(dialogCamposEmBrancoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(dialogCamposEmBrancoLayout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(buttonErroCamposEmBranco, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel4)))
+                    .addGroup(dialogCamposEmBrancoLayout.createSequentialGroup()
+                        .addGap(99, 99, 99)
+                        .addComponent(jLabel3)))
+                .addContainerGap(120, Short.MAX_VALUE))
+        );
+        dialogCamposEmBrancoLayout.setVerticalGroup(
+            dialogCamposEmBrancoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dialogCamposEmBrancoLayout.createSequentialGroup()
+                .addContainerGap(46, Short.MAX_VALUE)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(buttonErroCamposEmBranco)
+                .addGap(36, 36, 36))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -32,10 +79,10 @@ public class Conection extends javax.swing.JFrame {
 
         jLabel2.setText("Senha:");
 
-        jButton1.setText("Ok");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        buttonLogin.setText("Ok");
+        buttonLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                buttonLoginActionPerformed(evt);
             }
         });
 
@@ -58,7 +105,7 @@ public class Conection extends javax.swing.JFrame {
                                 .addComponent(textPass, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(22, 22, 22))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(buttonLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(94, 94, 94))))
         );
         jPanel1Layout.setVerticalGroup(
@@ -73,7 +120,7 @@ public class Conection extends javax.swing.JFrame {
                     .addComponent(jLabel2)
                     .addComponent(textPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(29, 29, 29)
-                .addComponent(jButton1)
+                .addComponent(buttonLogin)
                 .addContainerGap(35, Short.MAX_VALUE))
         );
 
@@ -97,23 +144,24 @@ public class Conection extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        
-        if( textUser.getText() == null || textPass.getPassword() == null)
+    private void buttonLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLoginActionPerformed
+            
+        String senha = new String(textPass.getPassword());
+        if(conectar(textUser.getText(), senha))
         {
-            System.out.println("Username ou Senha em branco");
-            return;
+            dispose();
+            JanelaPrincipal j = new JanelaPrincipal(connection);
         }
         else
         {
-            String senha = new String(textPass.getPassword());
-            if(conectar(textUser.getText(), senha))
-            {
-                dispose();
-                JanelaPrincipal j = new JanelaPrincipal(connection);
-            }
+            dialogCamposEmBranco.setLocationRelativeTo (null);
+            dialogCamposEmBranco.setVisible (true);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_buttonLoginActionPerformed
+
+    private void buttonErroCamposEmBrancoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonErroCamposEmBrancoActionPerformed
+        dialogCamposEmBranco.dispose();
+    }//GEN-LAST:event_buttonErroCamposEmBrancoActionPerformed
     
     /* Conecta o usuario */
     public boolean conectar( String username, String password ){       
@@ -143,9 +191,13 @@ public class Conection extends javax.swing.JFrame {
     
     Connection connection;
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton buttonErroCamposEmBranco;
+    private javax.swing.JButton buttonLogin;
+    private javax.swing.JDialog dialogCamposEmBranco;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPasswordField textPass;
     private javax.swing.JTextField textUser;

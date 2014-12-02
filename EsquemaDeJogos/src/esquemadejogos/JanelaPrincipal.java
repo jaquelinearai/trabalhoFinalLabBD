@@ -102,30 +102,7 @@ public class JanelaPrincipal {
         
         /*Cria a tab de resumo de jogos*/
         pPainelDeResumoDeJogos = new JPanel();
-        tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos");
-        
-        JButton connectBtn = new JButton(new AbstractAction("Connect") {
-
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                getDDL((String) jc.getSelectedItem());
-            }
-        });
-        
-        pPainelDDL = new JScrollPane();
-        pPainelDDL.setLayout(new ScrollPaneLayout());
-        pPainelUserInfo = new JPanel();
-        pPainelUserInfo.setLayout(new GridLayout(3, 2));
-        pPainelUserInfo.add(new JLabel("Username"));
-        username = new JTextField("Digite aqui");
-        pPainelUserInfo.add(username);
-        pPainelUserInfo.add(new JLabel("Password"));
-        password = new JTextField("Digite aqui");
-        pPainelUserInfo.add(password);
-        pPainelUserInfo.add(connectBtn);
-        pPainelDDL.setViewportView(pPainelUserInfo);
-        //pPainelDDL.add(pPainelUserInfo);
-        tabbedPane.add(pPainelDDL, "DDL");
+        tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos"); 
                 
         this.DefineEventos();
         j.setVisible(true);
