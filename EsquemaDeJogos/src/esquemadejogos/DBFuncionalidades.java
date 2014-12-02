@@ -416,10 +416,9 @@ public class DBFuncionalidades {
                 for(int i = 0; i < columnNames.size(); i++)
                 {
                     tableData.get(j).add(rsContent.getString(columnNames.get(i)));
-                    System.out.println("Peguei um conteudo"+" "+i+" "+rsContent.getString(columnNames.get(i)));
                 }
                 j++;
-            }
+            } 
         }
         catch (Exception ex) {
             System.out.println(ex.getMessage());

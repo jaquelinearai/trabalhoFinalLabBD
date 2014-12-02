@@ -49,6 +49,9 @@ public class JanelaPrincipal {
     JTable jt;
     JTable selectTable;
     JPanel pPainelDeInsecaoDeDados;
+    JPanel pPainelDeExcluirDados;
+    JPanel pPainelDeAtualizarDados;
+    JPanel pPainelDeResumoDeJogos;
     DBFuncionalidades bd;
     JPanelComponents pc;
     JButton buttonInsert;
@@ -83,22 +86,32 @@ public class JanelaPrincipal {
         /*Mudada para JScrollPane por JPanel nao exibir o titulo das JTables por algum motivo*/
         pPainelDeExibicaoDeDados = new JScrollPane();
         pPainelDeExibicaoDeDados.setLayout(new ScrollPaneLayout());
-        tabbedPane.add(pPainelDeExibicaoDeDados, "Exibição");
+        tabbedPane.add(pPainelDeExibicaoDeDados, "Listar");
         
-        /*Cria a tab de insercaco*/
+        /*Cria a tab de insercao*/
         pPainelDeInsecaoDeDados = new JPanel();
-       
-        tabbedPane.add(pPainelDeInsecaoDeDados, "Insercao");
+        tabbedPane.add(pPainelDeInsecaoDeDados, "Inserir");
+        
+        /*Cria a tab de atualizar*/
+        pPainelDeAtualizarDados = new JPanel();
+        tabbedPane.add(pPainelDeAtualizarDados, "Atualizar");
+        
+        /*Cria a tab de excluir*/
+        pPainelDeExcluirDados = new JPanel();
+        tabbedPane.add(pPainelDeExcluirDados, "Excluir");
+        
+        /*Cria a tab de resumo de jogos*/
+        pPainelDeResumoDeJogos = new JPanel();
+        tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos");
         
         JButton connectBtn = new JButton(new AbstractAction("Connect") {
 
-         @Override
-         public void actionPerformed(ActionEvent arg0) {
-
-             getDDL((String) jc.getSelectedItem());
-             
-         }
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                getDDL((String) jc.getSelectedItem());
+            }
         });
+        
         pPainelDDL = new JScrollPane();
         pPainelDDL.setLayout(new ScrollPaneLayout());
         pPainelUserInfo = new JPanel();
