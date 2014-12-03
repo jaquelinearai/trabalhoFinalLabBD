@@ -1,16 +1,32 @@
 package esquemadejogos;
 
+import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Blob;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -21,14 +37,14 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneLayout;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.JButton;
-import java.awt.Dimension;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.util.*;
+import oracle.jdbc.OracleTypes;
+import oracle.jdbc.oracore.OracleType;
+import oracle.sql.ARRAY;
+import oracle.sql.ArrayDescriptor;
+import oracle.sql.BLOB;
 
 
 public class JanelaPrincipal {
@@ -46,8 +62,11 @@ public class JanelaPrincipal {
     JScrollPane pPainelDDL = null;
     JTabbedPane tabbedPane;
     JScrollPane pPainelDeExibicaoDeDados = null;
+    JScrollPane panelJogos = null;
+    JPanel pPainelDeJogos = null;
     JTable jt;
     JTable selectTable;
+    JTable gameTable;
     JPanel pPainelDeInsecaoDeDados;
     JPanel pPainelDeExcluirDados;
     JPanel pPainelDeAtualizarDados;
@@ -55,9 +74,14 @@ public class JanelaPrincipal {
     DBFuncionalidades bd;
     JPanelComponents pc;
     JButton buttonInsert;
+    JButton buttonImage;
+    FileInputStream img;
     Boolean isOnDDL;
     Boolean isOnSel;
     Boolean isOnIns;
+    JLabel label;
+    CallableStatement comando;
+    String selectedGame = null;
     
     public JanelaPrincipal(Connection connection) {
         j = new JFrame("ICMC-USP - SCC0541 - Pratica Final");
@@ -104,6 +128,39 @@ public class JanelaPrincipal {
         pPainelDeResumoDeJogos = new JPanel();
         tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos"); 
                 
+        pPainelDeJogos = new JPanel();
+        pPainelDeJogos.setLayout( new GridLayout(1,3));
+    
+        panelJogos = new JScrollPane();
+        panelJogos.setLayout(new ScrollPaneLayout());
+        
+        label = new JLabel();
+        pPainelDeJogos.add(label);
+        
+        buttonImage = new JButton("New Image");
+        
+        buttonImage.addActionListener(new ActionListener() {
+            
+                // Inserindo
+                public void actionPerformed(ActionEvent e)
+                {
+                    JFileChooser openFile = new JFileChooser();
+                    openFile.showOpenDialog(null);
+                    File file = openFile.getSelectedFile();
+                    try {
+                        img = new FileInputStream(file);
+                        insertImage(img, selectedGame);
+                    }
+                    catch(IOException e1) {}
+                }
+        });
+    
+        pPainelDeJogos.add(buttonImage);
+        /*Cria a tab de imagem de jogos*/
+        
+        
+        
+        
         this.DefineEventos();
         j.setVisible(true);
 
@@ -114,13 +171,73 @@ public class JanelaPrincipal {
        
         /*Cria a JTable com os dados resultantes do select na tabela escolhida*/
         createSelectTable((String) jc.getItemAt(0));
+        
+        gameTable = bd.preencherTableSelect("JOGO");
+        panelJogos.setViewportView(gameTable);
+        gameTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                System.out.println("Print Image");
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                DefaultTableModel m =  (DefaultTableModel) target.getModel();
+                Vector<String> r = (Vector<String>) m.getDataVector().get(row);
+                selectedGame = r.get(column);
+                BufferedImage img = getImage(r.get(2));
+                ImageIcon icon=new ImageIcon(img); // ADDED
+                label.setIcon(icon); // ADDED
+
+                Dimension imageSize = new Dimension(icon.getIconWidth(),icon.getIconHeight()); // ADDED
+                label.setPreferredSize(imageSize); // ADDED
+            }
+        });
+        //Cria a tab de jogos
+        pPainelDeJogos.add(panelJogos);
+        tabbedPane.add(pPainelDeJogos, "Jogo");
+        
     }
+    
     private void createSelectTable(String table)
     {
         if(selectTable != null)
             pPainelDeExibicaoDeDados.remove(selectTable);
         selectTable = bd.preencherTableSelect(table);
         pPainelDeExibicaoDeDados.setViewportView(selectTable);
+    }
+    public void insertImage(FileInputStream image, String gameName)
+    {
+        
+        try {
+            comando = bd.connection.prepareCall("{ call db_Utilities_pkg.insertImage(?, ?) }");
+         
+            comando.setString(1, gameName);
+            comando.setBinaryStream(2, image);
+            comando.execute();
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        } 
+        
+    }
+    
+    BufferedImage getImage(String gameName)
+    {
+        try {
+            comando = bd.connection.prepareCall("{ call db_Utilities_pkg.getImage(?, ?) }");
+         
+            comando.registerOutParameter(1, OracleTypes.BLOB);
+            comando.setString(2, gameName);
+            comando.execute();
+            Blob image = comando.getBlob(1);
+            BufferedImage img = ImageIO.read(image.getBinaryStream());
+            return img;
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
     
     public void getDDL(String tablename)

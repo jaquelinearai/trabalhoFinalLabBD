@@ -426,6 +426,11 @@ public class DBFuncionalidades {
         /*Creates a new JTable with the information from the select*/
         jtSelect = new JTable(tableData, columnNames){
             
+            @Override
+            public boolean isCellEditable(int row, int column) {
+               //all cells false
+               return false;
+            }
             /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
             /* !!!!!!!!!!!!!!!!!!!!!!!!!! PROBLEM DETECTED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
             /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/

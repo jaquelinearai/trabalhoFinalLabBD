@@ -30,15 +30,14 @@ BEGIN
 		FETCH c_countImg INTO i;
 	CLOSE c_countImg;
 	
-	j := trunc(dbms_random.value(1,i+1));		
+	j := dbms_random.value(1,i+1);		
 	i := 0;
 	
 	OPEN c_imgId;
 		LOOP 
 			FETCH c_imgId INTO imgId;
-			i:= i + 1;
 			EXIT WHEN c_imgId%NOTFOUND OR j = i;
-			
+			i:= i + 1;
 		END LOOP;
 	CLOSE c_imgId;
 	
