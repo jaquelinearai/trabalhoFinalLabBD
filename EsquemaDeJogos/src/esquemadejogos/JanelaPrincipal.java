@@ -60,7 +60,7 @@ public class JanelaPrincipal {
     Boolean isOnIns;
     
     public JanelaPrincipal(Connection connection) {
-        j = new JFrame("ICMC-USP - SCC0541 - Pratica 10");
+        j = new JFrame("ICMC-USP - SCC0541 - Pratica Final");
         j.setSize(700, 500);
         j.setLayout(new BorderLayout());
         j.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
