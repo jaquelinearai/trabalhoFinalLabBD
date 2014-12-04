@@ -240,11 +240,11 @@ public class JanelaPrincipal {
         return null;
     }
     
-    public void getDDL(String tablename)
+    /*public void getDDL(String tablename)
     {
         
-        /*if(selectTable != null)
-            pPainelDeExibicaoDeDados.remove(selectTable);*/
+        //if(selectTable != null)
+            //pPainelDeExibicaoDeDados.remove(selectTable);
         if(bd.connected == false)
         {
             System.out.println(username.getText());
@@ -263,7 +263,7 @@ public class JanelaPrincipal {
         }
         jTAreaDDL = bd.getDDL(tablename);
         pPainelDDL.setViewportView(jTAreaDDL);
-    }
+    }*/
     
     private void createInsertTab(String table)
     {
@@ -372,10 +372,10 @@ public class JanelaPrincipal {
                     /*Cria os campos de insercao*/
                     createInsertTab((String) jcTemp.getSelectedItem());
                 
-                    if(bd.connected)
+                    /*if(bd.connected)
                     {
                         getDDL((String) jcTemp.getSelectedItem());
-                    }
+                    }*/
                 }
             }
         });

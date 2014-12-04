@@ -25,6 +25,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import oracle.jdbc.OracleTypes;
 
 public class DBFuncionalidades {
     Connection connection;
@@ -54,7 +55,7 @@ public class DBFuncionalidades {
         this.connection = connection;
     }
     
-    public JTextArea getDDL(String tablename)
+    /*public JTextArea getDDL(String tablename)
     {
         Statement s;
         CallableStatement cs;
@@ -100,41 +101,50 @@ public class DBFuncionalidades {
         }
         jtaddl.setText(sddl);
         return jtaddl;
-    }
+    }*/
     
+    /*Calls statement to get metadata from the table*/
     public String getMetaData(String tableName)
     {
         String metaData = new String();
-        Statement st;
+        CallableStatement st;
         ResultSet rsmd;
-        try
-        {
-            st = connection.createStatement();
-            /*Search for the metadata and adds it to the string to be shown in the lower part of the window*/
-            rsmd = st.executeQuery("SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NUM_NULLS, NUM_DISTINCT, "
-                    + "DATA_DEFAULT, COLUMN_ID, NULLABLE from USER_TAB_COLUMNS where table_name = '" + tableName + "'");
-                while (rsmd.next()) {
-                    metaData += "ID ="+rsmd.getString("COLUMN_ID")+" |NAME ="+rsmd.getString("COLUMN_NAME") 
-                        +" |TYPE ="+rsmd.getString("DATA_TYPE")+" |LENGTH ="+rsmd.getString("DATA_LENGTH")+" |NULL? ="+rsmd.getString("NULLABLE")
-                            + " |DEFAULT =" + rsmd.getString("DATA_DEFAULT")+" |#NULLS = " + rsmd.getString("NUM_NULLS")+" |#DISTINCT = "+rsmd.getString("NUM_DISTINCT")+"\n";
-                }
+       
+        try {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getMetaData(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.VARCHAR);
+            st.setString(2, tableName);
+            st.execute();
+            metaData = st.getString(1);
+            return metaData;
         }
-        catch (Exception ex) {
-            System.out.println(ex.getMessage());
+        catch (SQLException ex) {
+            ex.printStackTrace();
         }
         return metaData;
     }
-        
+    /*Calls statement to get the table names from the database and show them in the combobox*/
     public void pegarNomesDeTabelasComboBox(JComboBox jc){
         String s = "";
+        CallableStatement st;
         try {
-            s = "SELECT table_name FROM user_tables";
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(s);
-            while (rs.next()) {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getTableName(?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setFetchSize(100);
+
+            st.executeQuery();
+
+            ResultSet rs = (ResultSet)
+            st.getObject(1);
+
+            while (rs.next())
+            {
                 jc.addItem(rs.getString("table_name"));
             }
-            stmt.close();
+            rs.close();
+            st.close();
         } catch (SQLException ex) {
             jtAreaDeStatus.setText("Erro na consulta");
         }        

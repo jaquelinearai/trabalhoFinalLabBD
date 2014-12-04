@@ -13,14 +13,12 @@ i NUMBER;
 TYPE t_keysNamesArray IS VARRAY(15) OF ALL_CONS_COLUMNS.column_name%TYPE;
 --Names from all columns
 TYPE t_colNamesArray IS VARRAY(20) OF ALL_TAB_COLUMNS.column_name%TYPE;
---Cursor to select the column types from the table
-c_pColTypes SYS_REFCURSOR; 
 
 --Procedure declaration
 PROCEDURE select_procedure(c_return OUT SYS_REFCURSOR, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray);
 PROCEDURE insert_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_name t_attNameArray, p_newValue t_attValueArray);
 PROCEDURE update_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray);
-PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray);
+PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray, p_operation VARCHAR2);
 
 END db_Operations_pkg;
 
@@ -32,7 +30,9 @@ keyTypes t_colNamesArray := t_colNamesArray();
 p_types t_colNamesArray := t_colNamesArray();
 
 --Procedure Body
-PROCEDURE select_procedure(c_return OUT SYS_REFCURSOR, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray);
+PROCEDURE select_procedure(c_return OUT SYS_REFCURSOR, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray) AS
+--Cursor to select the column types from the table
+c_pColTypes SYS_REFCURSOR; 
 BEGIN 
 	--Get the types from the columns that will be used as search parameters for the rows in the operations
 	IF p_keyAttNames.COUNT != 0 THEN
@@ -92,21 +92,9 @@ BEGIN
 	OPEN c_return FOR sql_text;
 END select_procedure;
 
-PROCEDURE insert_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_name t_attNameArray, p_newValue t_attValueArray);
+PROCEDURE insert_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_name t_attNameArray, p_newValue t_attValueArray) AS
+c_pColTypes SYS_REFCURSOR; 
 BEGIN 
-	--Get the types from the columns that will be used as search parameters for the rows in the operations
-	IF p_keyAttNames.COUNT != 0 THEN
-		i := 1;
-		LOOP
-			sql_text := 'SELECT cols.DATA_TYPE FROM all_tab_columns cols WHERE cols.table_name = ''' || p_table || ''' AND cols.column_name = '''|| p_keyAttNames(i) ||'''';
-			OPEN c_pColTypes FOR sql_text;
-		keyTypes.extend;
-		FETCH c_pColTypes INTO keyTypes(i);
-		EXIT WHEN i = p_keyAttNames.COUNT;
-		i := i + 1;
-		END LOOP;
-		CLOSE c_pColTypes;
-	END IF;
 	--Find the types from the data that will be inserted
 	i := 1;
 	LOOP
@@ -166,7 +154,8 @@ BEGIN
 
 END insert_procedure;		
 
-PROCEDURE update_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray);
+PROCEDURE update_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray) AS
+c_pColTypes SYS_REFCURSOR; 
 BEGIN 
 	--Get the types from the columns that will be used as search parameters for the rows in the operations
 	IF p_keyAttNames.COUNT != 0 THEN
@@ -258,8 +247,8 @@ BEGIN
 
 END update_procedure;
 
-PROCEDURE delete_procedure(c_return OUT SYS_REFCURSOR, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray, p_operation VARCHAR2);
-
+PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray, p_operation VARCHAR2) AS
+c_pColTypes SYS_REFCURSOR; 
 BEGIN
  
 	--Get the types from the columns that will be used as search parameters for the rows in the operations
@@ -308,4 +297,5 @@ BEGIN
 	--Execute the delete command
 	EXECUTE IMMEDIATE sql_text;
 	m_return := 'Foram deletados: ' || SQL%ROWCOUNT || ' dados';
+  END delete_procedure;
 END db_Operations_pkg;
