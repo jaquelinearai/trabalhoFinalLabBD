@@ -9,10 +9,72 @@ PROCEDURE getImage(image OUT BLOB, gameName VARCHAR2);
 PROCEDURE insertImage(gameName VARCHAR2, image BLOB);
 PROCEDURE getMetaData(m_return OUT VARCHAR2, tableName VARCHAR2);
 PROCEDURE getTableName(c_return OUT SYS_REFCURSOR);
+PROCEDURE getNCol(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getColName(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getCheck(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getFK(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getFKValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getFKOrigColName(c_return OUT SYS_REFCURSOR, originalTable VARCHAR2, tableName VARCHAR2, originalColumn VARCHAR2, testingColumnFK VARCHAR2);
 
 END db_Utilities_pkg;
 
 CREATE OR REPLACE PACKAGE BODY db_Utilities_pkg AS
+
+PROCEDURE getFKOrigColName(c_return OUT SYS_REFCURSOR, originalTable VARCHAR2, tableName VARCHAR2, originalColumn VARCHAR2, testingColumnFK VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT UNIQUE O.'||originalColumn||' AS NEWNAME '||
+        'FROM '||originalTable|| ' O, '||tableName||' T where O.'||originalColumn||' = T.'||testingColumnFK||' ';
+    OPEN c_return FOR sql_text;
+END getFKOrigColName;
+
+PROCEDURE getFKValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT A.TABLE_NAME, A.COLUMN_NAME, A.POSITION, A.CONSTRAINT_NAME, '||
+        'C_PK.TABLE_NAME AS ORIGINALTABLE, C_PK.CONSTRAINT_NAME R_PK, UCC.COLUMN_NAME AS ORIGINALCOLUMN, '||
+        'UCC.POSITION AS ORIGINALPOSITION '||
+        'FROM ALL_CONS_COLUMNS A '||
+        'JOIN ALL_CONSTRAINTS C ON A.OWNER = C.OWNER '||
+        'AND A.CONSTRAINT_NAME = C.CONSTRAINT_NAME '||
+        'JOIN ALL_CONSTRAINTS C_PK ON C.R_OWNER = C_PK.OWNER '||
+        'AND C.R_CONSTRAINT_NAME = C_PK.CONSTRAINT_NAME '||
+        'JOIN USER_CONS_COLUMNS UCC ON UCC.TABLE_NAME = C_PK.TABLE_NAME '||
+        'AND UCC.CONSTRAINT_NAME = C_PK.CONSTRAINT_NAME '||
+        'WHERE A.TABLE_NAME =''' ||tableName ||''' AND C.CONSTRAINT_TYPE=''R''';
+    OPEN c_return FOR sql_text;
+END getFKValues;
+
+PROCEDURE getFK(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT A.TABLE_NAME, A.COLUMN_NAME FROM ALL_CONS_COLUMNS A ' || 
+                    'JOIN ALL_CONSTRAINTS C ON A.OWNER=C.OWNER ' ||
+                    'AND A.CONSTRAINT_NAME=C.CONSTRAINT_NAME ' ||
+                    'WHERE A.TABLE_NAME='''||tableName||''' AND C.CONSTRAINT_TYPE=''R''';
+    OPEN c_return FOR sql_text;
+END getFK;
+
+PROCEDURE getCheck(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT CONSTRAINT_NAME, SEARCH_CONDITION FROM ALL_CONSTRAINTS WHERE TABLE_NAME =''' || tableName || ''' AND CONSTRAINT_TYPE=''C''';
+    OPEN c_return FOR sql_text;
+END getCheck;
+
+PROCEDURE getColName(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT COLUMN_NAME from USER_TAB_COLUMNS where table_name = ''' || tableName || '''';
+    OPEN c_return FOR sql_text;
+END getColName;
+
+PROCEDURE getNCol(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT COUNT(*) from USER_TAB_COLUMNS where table_name = ''' || tableName || '''';
+    OPEN c_return FOR sql_text;
+END getNCol;
 
 PROCEDURE getTableName(c_return OUT SYS_REFCURSOR) AS
 tableName VARCHAR2(50);

@@ -108,7 +108,6 @@ public class DBFuncionalidades {
     {
         String metaData = new String();
         CallableStatement st;
-        ResultSet rsmd;
        
         try {
             st = this.connection.prepareCall("{ call db_Utilities_pkg.getMetaData(?, ?) }");
@@ -136,8 +135,7 @@ public class DBFuncionalidades {
 
             st.executeQuery();
 
-            ResultSet rs = (ResultSet)
-            st.getObject(1);
+            ResultSet rs = (ResultSet) st.getObject(1);
 
             while (rs.next())
             {
@@ -150,57 +148,53 @@ public class DBFuncionalidades {
         }        
     }
     
-    public ResultSet pegarNomesDeTabelas(){
-        String s = "";
-        try {
-            s = "SELECT table_name FROM user_tables";
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery(s);
-            
-        } catch (SQLException ex) {
-            jtAreaDeStatus.setText("Erro na consulta");
-        }       
-        return rs;
-    }
-    
+    /*No need for cursor, only one value returned, need to fix later*/
      public int numeroDeColunas( String tableName )
     {        
         int a = 0;
-        try{
-            /*SELEÇÃO*/
-            stmt = connection.createStatement();
+        CallableStatement st;
+        try {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getNCol(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setString(2, tableName);
+            st.setFetchSize(100);
 
-            /*Return the number of columns from the table*/
-            rsColunms = stmt.executeQuery("SELECT COUNT(*) from USER_TAB_COLUMNS where table_name = '" + tableName + "'");
-            
-            /*Save the result*/
-            while (rsColunms.next())
-                a = rsColunms.getInt("COUNT(*)");
+            st.executeQuery();
+
+            ResultSet rs = (ResultSet) st.getObject(1);
+
+            while (rs.next())
+                a = rs.getInt("COUNT(*)");
+            rs.close();
+            st.close();
         }
         catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao pegar numero de colunas");
         }
         
         return a;
    }
-     
-    public ResultSet nomeDeColunas( String tableName )
-    {        
-        columnNames = new Vector();
-        try{
-            /*SELEÇÃO*/
-            stmt = connection.createStatement();
-            stmt2 = connection.createStatement();
-            rsContent = stmt.executeQuery("SELECT * FROM "+tableName);
-            
-            /*Return the column names from the table*/
-            rsColunms = stmt2.executeQuery("SELECT COLUMN_NAME from USER_TAB_COLUMNS where table_name = '" + tableName + "'");
+   public ResultSet nomeDeColunas( String tableName )
+    {       
+        ResultSet rs = null;
+        CallableStatement st;
+        try {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getColName(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setString(2, tableName);
+            st.setFetchSize(100);
+
+            st.executeQuery();
+
+            rs = (ResultSet)st.getObject(1);
         }
         catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao pegar nome de colunas");
         }
         
-        return rsColunms;
+        return rs;
    }
     
     /* - - - Check - - - */
@@ -209,14 +203,19 @@ public class DBFuncionalidades {
         ArrayList<String> isCheck = new ArrayList<>();
         Statement stmtCheck;
         ResultSet rsCheck;
-        
-        try{
-            stmtCheck = connection.createStatement();
-            rsCheck = stmtCheck.executeQuery("SELECT CONSTRAINT_NAME, SEARCH_CONDITION FROM "+
-                    "ALL_CONSTRAINTS WHERE TABLE_NAME ='"+tableName+"' AND CONSTRAINT_TYPE='C'");
-        
-            while (rsCheck.next()) {
-                String condition = rsCheck.getString("SEARCH_CONDITION");
+        CallableStatement st;
+        try {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getCheck(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setString(2, tableName);
+            st.setFetchSize(100);
+
+            st.executeQuery();
+
+            ResultSet rs = (ResultSet) st.getObject(1);
+            while (rs.next()) {
+                String condition = rs.getString("SEARCH_CONDITION");
 
                 String parts[];
 
@@ -229,8 +228,12 @@ public class DBFuncionalidades {
                 }
                 
             }
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+
+            rs.close();
+            st.close();
+        }
+        catch (Exception ex) {
+            jtAreaDeStatus.setText("Erro ao verificar se existe check");
         }
         
         if(containsCheck(isCheck, columnName))
@@ -243,16 +246,19 @@ public class DBFuncionalidades {
         ArrayList<String> isCheck = new ArrayList<>();
         Vector<String> checksValues = new Vector<>();
         int i=0;
-        Statement stmtCheck;
-        ResultSet rsCheck;
-        
-        try{
-            stmtCheck = connection.createStatement();
-            rsCheck = stmtCheck.executeQuery("SELECT CONSTRAINT_NAME, SEARCH_CONDITION FROM "+
-                    "ALL_CONSTRAINTS WHERE TABLE_NAME ='"+tableName+"' AND CONSTRAINT_TYPE='C'");
-        
-            while (rsCheck.next()) {
-                String condition = rsCheck.getString("SEARCH_CONDITION");
+        CallableStatement st;
+        try {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getCheck(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setString(2, tableName);
+            st.setFetchSize(100);
+
+            st.executeQuery();
+
+            ResultSet rs = (ResultSet) st.getObject(1);
+             while (rs.next()) {
+                String condition = rs.getString("SEARCH_CONDITION");
 
                 String strParse[];
 
@@ -276,8 +282,12 @@ public class DBFuncionalidades {
                     isCheck.add("");
                 }
             }
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+
+            rs.close();
+            st.close();
+        }
+        catch (Exception ex) {
+            jtAreaDeStatus.setText("Erro ao verificar se existe check");
         }
         
         return checksValues;
@@ -295,25 +305,27 @@ public class DBFuncionalidades {
     /* - - - FK - - - */
     public boolean isFK (String tableName, String columnName)
     {
-        Statement stmtFK;
         ResultSet rsFK;
         
-        try{
-            stmtFK = connection.createStatement();
-            
-            rsFK = stmtFK.executeQuery("SELECT A.TABLE_NAME, A.COLUMN_NAME "+
-                    "FROM ALL_CONS_COLUMNS A "+
-                    "JOIN ALL_CONSTRAINTS C ON A.OWNER=C.OWNER "+
-                    "AND A.CONSTRAINT_NAME=C.CONSTRAINT_NAME "+
-                    "WHERE A.TABLE_NAME='"+tableName+"' AND C.CONSTRAINT_TYPE='R'");
-        
-            while (rsFK.next()) {
-                String testingColumnName = rsFK.getString("COLUMN_NAME");
+
+        CallableStatement st;
+        try {
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getFK(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setString(2, tableName);
+            st.setFetchSize(100);
+
+            st.executeQuery();
+
+            ResultSet rs = (ResultSet) st.getObject(1);
+            while (rs.next()) {
+                String testingColumnName = rs.getString("COLUMN_NAME");
                 if (testingColumnName.equals(columnName))
                     return true;
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao verificar se eh FK"+ex.getMessage());
         }
         
         return false;
@@ -323,7 +335,6 @@ public class DBFuncionalidades {
     {
         Vector<String> fkValues = new Vector<>();
         Statement stmtFK;
-        Statement stmtSelectFK;
         ResultSet rsSelectFK;
         ResultSet rsFK;
         
@@ -331,45 +342,53 @@ public class DBFuncionalidades {
         
         try{
             stmtFK = connection.createStatement();
-            stmtSelectFK = connection.createStatement();
             
-            rsFK = stmtFK.executeQuery("SELECT A.TABLE_NAME, A.COLUMN_NAME, A.POSITION, A.CONSTRAINT_NAME, "+
-                    "C_PK.TABLE_NAME AS ORIGINALTABLE, C_PK.CONSTRAINT_NAME R_PK, UCC.COLUMN_NAME AS ORIGINALCOLUMN, UCC.POSITION AS ORIGINALPOSITION "+
-                    "FROM ALL_CONS_COLUMNS A "+
-                    "JOIN ALL_CONSTRAINTS C ON A.OWNER = C.OWNER "+
-                    "AND A.CONSTRAINT_NAME = C.CONSTRAINT_NAME "+
-                    "JOIN ALL_CONSTRAINTS C_PK ON C.R_OWNER = C_PK.OWNER "+
-                    "AND C.R_CONSTRAINT_NAME = C_PK.CONSTRAINT_NAME "+
-                    "JOIN USER_CONS_COLUMNS UCC ON UCC.TABLE_NAME = C_PK.TABLE_NAME "+
-                    "AND UCC.CONSTRAINT_NAME = C_PK.CONSTRAINT_NAME "+
-                    "WHERE A.TABLE_NAME ='"+tableName+"' AND C.CONSTRAINT_TYPE='R'");
-        
-            while (rsFK.next()) {
-                String testingColumnFK = rsFK.getString("COLUMN_NAME");
-                String testingPosition = rsFK.getString("POSITION");
-                String originalColumn = rsFK.getString("ORIGINALCOLUMN");
-                String originalPosition = rsFK.getString("ORIGINALPOSITION");
-                String originalTable = rsFK.getString("ORIGINALTABLE");
-                
+            CallableStatement st;
+            CallableStatement stmtSelectFK;
+            st = this.connection.prepareCall("{ call db_Utilities_pkg.getFKValues(?, ?) }");
+         
+            st.registerOutParameter(1, OracleTypes.CURSOR);
+            st.setString(2, tableName);
+            st.setFetchSize(100);
+
+            st.executeQuery();
+
+            ResultSet rs = (ResultSet) st.getObject(1);
+            while (rs.next()) {
+                String testingColumnFK = rs.getString("COLUMN_NAME");
+                String testingPosition = rs.getString("POSITION");
+                String originalColumn = rs.getString("ORIGINALCOLUMN");
+                String originalPosition = rs.getString("ORIGINALPOSITION");
+                String originalTable = rs.getString("ORIGINALTABLE");
                 
                 if (testingColumnFK.equals(columnName) && testingPosition.equals(originalPosition)) {
                     
-                    try{
-                        rsSelectFK = stmtSelectFK.executeQuery("SELECT UNIQUE O."+originalColumn+" AS NEWNAME "+
-                        "FROM "+originalTable+" O, "+tableName+" T where O."+originalColumn+" = T."+testingColumnFK+" ");
+                   try{
 
+                        st = this.connection.prepareCall("{ call db_Utilities_pkg.getFKOrigColName(?, ?, ?, ?, ?) }");
+
+                        st.registerOutParameter(1, OracleTypes.CURSOR);
+                        st.setString(2, originalTable);
+                        st.setString(3, tableName);
+                        st.setString(4, originalColumn);
+                        st.setString(5, testingColumnFK);
+                        st.setFetchSize(100);
+
+                        st.executeQuery();
+
+                        rsSelectFK = (ResultSet) st.getObject(1);
 
                         while (rsSelectFK.next()) {
                             String values = rsSelectFK.getString("NEWNAME");
                             fkValues.add(values);
                         }
                     }catch (Exception ex) {
-                        System.out.println(ex.getMessage());
+                        jtAreaDeStatus.setText("Erro ao verificar origem de FK "+ex.getMessage());
                     }
                 }
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao pegar valores de FK "+ex.getMessage());
         }
         
         return fkValues;
@@ -381,7 +400,7 @@ public class DBFuncionalidades {
             stmt = connection.createStatement();
             rs = stmt.executeQuery("INSERT INTO "+tableName+" VALUES("+strInsert+")");
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText(ex.getMessage());
         }
     }
      
@@ -431,7 +450,7 @@ public class DBFuncionalidades {
             } 
         }
         catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText(ex.getMessage());
         }
         /*Creates a new JTable with the information from the select*/
         jtSelect = new JTable(tableData, columnNames){
