@@ -373,27 +373,28 @@ public class JanelaPrincipal {
             {
                 String strInsert = new String("");
                 String strTF;
-
+                ArrayList<String> colNames = new ArrayList<>();
+                ArrayList<String> colValues = new ArrayList<>();
+                
                 for(int i = 0; i < nColunas; i++){
                     if(panelComponents.elementAt(i).cb == null) {
-                        strTF = panelComponents.elementAt(i).tf.getText();
-                        System.out.println(strTF);
+                        /*strTF = panelComponents.elementAt(i).tf.getText();
+                        System.out.println(strTF);*/
+                        colValues.add((String) panelComponents.elementAt(i).tf.getText());
+                        colNames.add((String) panelComponents.elementAt(i).columnName);
                     }
                     
                     else {
-                        strTF = (String) panelComponents.elementAt(i).cb.getSelectedItem();
-                        System.out.println(strTF);
+                        /*strTF = (String) panelComponents.elementAt(i).cb.getSelectedItem();
+                        System.out.println(strTF);*/
+                        colValues.add((String) panelComponents.elementAt(i).cb.getSelectedItem());
+                        colNames.add((String) panelComponents.elementAt(i).columnName);
                     }
-                    
-                    if(i < nColunas-1)
-                        strInsert += "'"+strTF+"', ";
-                    
-                    else
-                        strInsert += "'"+strTF+"'";
                 }
                 
                 System.out.println(strInsert);
-                bd.insertValuesBD(table, strInsert);
+                bd.insertValuesBD(table, colNames, colValues);
+                
                 
                 //E se for date
             }
@@ -470,25 +471,14 @@ public class JanelaPrincipal {
                 ArrayList<String> colNames = new ArrayList<>();
                 ArrayList<String> colValues = new ArrayList<>();
                 for(int i = 0; i < nColunas; i++){
-                    if(panelComponents.elementAt(i).cb == null) {
-                        strTF = panelComponents.elementAt(i).tf.getText();
-                        System.out.println(strTF);
+                    if(panelComponents.elementAt(i).cb.getSelectedIndex() != 0){
+                        colValues.add((String) panelComponents.elementAt(i).cb.getSelectedItem());
+                        colNames.add((String) panelComponents.elementAt(i).columnName);
                     }
-                    
-                    else {
-                        strTF = (String) panelComponents.elementAt(i).cb.getSelectedItem();
-                        System.out.println(strTF);
-                    }
-                    
-                    if(i < nColunas-1)
-                        colValues.add(strTF);
-                    
-                    else
-                        strRemove += "'"+strTF+"'";
                 }
                 
                 System.out.println(strRemove);
-                bd.removeValuesBD(table, strRemove);
+                bd.removeValuesBD(table, colNames, colValues);
                 
                 //E se for date
             }

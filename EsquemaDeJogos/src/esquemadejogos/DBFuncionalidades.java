@@ -26,6 +26,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import oracle.jdbc.OracleTypes;
+import oracle.sql.ARRAY;
+import oracle.sql.ArrayDescriptor;
 
 public class DBFuncionalidades {
     Connection connection;
@@ -395,17 +397,66 @@ public class DBFuncionalidades {
         return fkValues;
     }
     
-    public void insertValuesBD(String tableName, String strInsert) {
+    public void insertValuesBD(String tableName, ArrayList<String> colNames, ArrayList<String> colValues) {
         
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("INSERT INTO "+tableName+" VALUES("+strInsert+")");
-        } catch (Exception ex) {
-            jtAreaDeStatus.setText(ex.getMessage());
+        CallableStatement st;
+        ArrayDescriptor descriptor;
+        String error = new String();
+        for(int i = 0; i < colNames.size(); i++){
+            System.out.println("name: "+colNames.get(i)+ " val: "+colValues.get(i));
         }
+        String output = new String();
+        try {
+            descriptor = ArrayDescriptor.createDescriptor("T_ATTNAMEARRAY", this.connection);
+            String[] stringArray = colNames.toArray(new String[colNames.size()]);
+            ARRAY atrNames = new ARRAY(descriptor, this.connection, stringArray);
+            ArrayDescriptor descriptor2 = ArrayDescriptor.createDescriptor("T_ATTVALUEARRAY", this.connection);
+            stringArray = colValues.toArray(new String[colValues.size()]);
+            ARRAY atrValues = new ARRAY(descriptor2, this.connection, stringArray);
+            st = this.connection.prepareCall("{ call  db_Operations_pkg.insert_procedure(?, ?, ?, ?) }");
+
+            st.registerOutParameter(1, OracleTypes.VARCHAR);
+            st.setString(2, tableName);
+            st.setArray(3, atrNames);
+            st.setArray(4, atrValues);
+            st.execute();
+            output = st.getString(1);
+        } catch (SQLException ex) {
+            error = ex.toString();
+        }
+        jtAreaDeStatus.setText("Insert Result: " + output + error);
     }
     
-    public void removeValuesBD(String tableName, String strInsert){
+    public void removeValuesBD(String tableName, ArrayList<String> colNames, ArrayList<String> colValues){
+        CallableStatement st;
+        ArrayDescriptor descriptor;
+        String error = new String();
+        for(int i = 0; i < colNames.size(); i++){
+            System.out.println("name: "+colNames.get(i)+ " val: "+colValues.get(i));
+        }
+        String output = new String();
+        try {
+            descriptor = ArrayDescriptor.createDescriptor("T_ATTNAMEARRAY", this.connection);
+            String[] stringArray = colNames.toArray(new String[colNames.size()]);
+            ARRAY atrNames = new ARRAY(descriptor, this.connection, stringArray);
+            ArrayDescriptor descriptor2 = ArrayDescriptor.createDescriptor("T_ATTVALUEARRAY", this.connection);
+            stringArray = colValues.toArray(new String[colValues.size()]);
+            ARRAY atrValues = new ARRAY(descriptor2, this.connection, stringArray);
+            st = this.connection.prepareCall("{ call  db_Operations_pkg.delete_procedure(?, ?, ?, ?) }");
+
+            st.registerOutParameter(1, OracleTypes.VARCHAR);
+            st.setString(2, tableName);
+            st.setArray(3, atrNames);
+            st.setArray(4, atrValues);
+            st.execute();
+            output = st.getString(1);
+        } catch (SQLException ex) {
+            error = ex.toString();
+        }
+        jtAreaDeStatus.setText("Delete Result: " + output + error);
+    }
+    
+    void updateValuesBD(){
         
     }
      
