@@ -63,10 +63,12 @@ public class JanelaPrincipal {
     JTabbedPane tabbedPane;
     JScrollPane pPainelDeExibicaoDeDados = null;
     JScrollPane panelJogos = null;
+    JScrollPane panelGameDescription = null;
     JPanel pPainelDeJogos = null;
     JTable jt;
     JTable selectTable;
     JTable gameTable;
+    JTable gameDescriptionTable;
     JPanel pPainelDeInsecaoDeDados;
     JPanel pPainelDeExcluirDados;
     JPanel pPainelDeAtualizarDados;
@@ -127,13 +129,18 @@ public class JanelaPrincipal {
         
         /*Cria a tab de resumo de jogos*/
         pPainelDeResumoDeJogos = new JPanel();
-        tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos"); 
+        pPainelDeResumoDeJogos.setLayout( new GridLayout(1,3));
+        
                 
         pPainelDeJogos = new JPanel();
         pPainelDeJogos.setLayout( new GridLayout(1,3));
     
         panelJogos = new JScrollPane();
         panelJogos.setLayout(new ScrollPaneLayout());
+        
+        panelGameDescription = new JScrollPane();
+        panelGameDescription.setLayout(new ScrollPaneLayout());
+        
         
         label = new JLabel();
         pPainelDeJogos.add(label);
@@ -173,6 +180,9 @@ public class JanelaPrincipal {
         /*Cria a JTable com os dados resultantes do select na tabela escolhida*/
         createSelectTable((String) jc.getItemAt(0));
         
+        gameDescriptionTable = bd.preencherTableSelect("JOGO");
+        panelGameDescription.setViewportView(gameDescriptionTable);
+                
         gameTable = bd.preencherTableSelect("JOGO");
         panelJogos.setViewportView(gameTable);
         gameTable.addMouseListener(new MouseAdapter() {
@@ -192,9 +202,14 @@ public class JanelaPrincipal {
                 label.setPreferredSize(imageSize); // ADDED
             }
         });
+        
+        pPainelDeResumoDeJogos.add(panelGameDescription);
+        tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos"); 
         //Cria a tab de jogos
         pPainelDeJogos.add(panelJogos);
+        
         tabbedPane.add(pPainelDeJogos, "Jogo");
+        
         
     }
     
