@@ -470,23 +470,50 @@ public class DBFuncionalidades {
         tableData = new Vector<>();
         pkColumns = new Vector();
         System.out.println(tableName);
+        /*SELEÇÃO*/
+        CallableStatement stmt = null;
+        CallableStatement stmt2 = null;
+        CallableStatement stmt3 = null;
+        try {
+            stmt = this.connection.prepareCall("{ call db_Utilities_pkg.getEvrtng(?, ?) }");
+
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.setString(2, tableName);
+            stmt.setFetchSize(100);
+
+            stmt.executeQuery();
+
+            rsContent = (ResultSet) stmt.getObject(1);
+        }catch (Exception ex) {
+            jtAreaDeStatus.setText("Erro selecionando conteudo da tabela - "+ex.getMessage());
+        }
         try{
-            /*SELEÇÃO*/
-            stmt = connection.createStatement();
-            stmt2 = connection.createStatement();
-            stmt3 = connection.createStatement();
-            rsContent = stmt.executeQuery("SELECT * FROM "+tableName);
-            
-            /*Return the name of the columns that are primary keys*/
-            rsPK = stmt3.executeQuery("SELECT cols.table_name, cols.column_name, cols.position, cons.status, cons.owner "
-                    + "FROM all_constraints cons, all_cons_columns cols "
-                    + "WHERE cols.table_name = '"+tableName+"' "
-                    + "AND cons.constraint_type = 'P' "
-                    + "AND cons.constraint_name = cols.constraint_name "
-                    + "AND cons.owner = cols.owner "
-                    + "ORDER BY cols.table_name, cols.position");
-            /*Return the column names from the table*/
-            rsColunms = stmt2.executeQuery("SELECT COLUMN_NAME from USER_TAB_COLUMNS where table_name = '" + tableName + "'");
+            stmt2 = this.connection.prepareCall("{ call db_Utilities_pkg.getPKs(?, ?) }");
+
+            stmt2.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt2.setString(2, tableName);
+            stmt2.setFetchSize(100);
+
+            stmt2.executeQuery();
+
+            rsPK = (ResultSet) stmt2.getObject(1);
+        }catch (Exception ex) {
+            jtAreaDeStatus.setText("Erro selecionando PKs da tabela - "+ex.getMessage());
+        }
+        try{
+            stmt3 = this.connection.prepareCall("{ call db_Utilities_pkg.getColName(?, ?) }");
+
+            stmt3.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt3.setString(2, tableName);
+            stmt3.setFetchSize(100);
+
+            stmt3.executeQuery();
+
+            rsColunms = (ResultSet) stmt3.getObject(1);
+        }catch (Exception ex) {
+            jtAreaDeStatus.setText("Erro selecionando nomes das colunas - "+ex.getMessage());
+        }
+        try{
             /*Save the results in vectors*/
             while (rsPK.next()) {
                 pkColumns.add(rsPK.getString("COLUMN_NAME"));
@@ -504,10 +531,17 @@ public class DBFuncionalidades {
                 }
                 j++;
             } 
+            rsColunms.close();
+            rsContent.close();
+            rsPK.close();
+            stmt.close();
+            stmt2.close();
+            stmt3.close();
         }
         catch (Exception ex) {
-            jtAreaDeStatus.setText(ex.getMessage());
+            jtAreaDeStatus.setText("Erro select - "+ex.getMessage());
         }
+        
         /*Creates a new JTable with the information from the select*/
         jtSelect = new JTable(tableData, columnNames){
             

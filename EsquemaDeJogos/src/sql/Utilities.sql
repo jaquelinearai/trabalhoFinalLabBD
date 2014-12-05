@@ -15,10 +15,42 @@ PROCEDURE getCheck(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
 PROCEDURE getFK(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
 PROCEDURE getFKValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
 PROCEDURE getFKOrigColName(c_return OUT SYS_REFCURSOR, originalTable VARCHAR2, tableName VARCHAR2, originalColumn VARCHAR2, testingColumnFK VARCHAR2);
+PROCEDURE getEvrtng(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getPKs(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
+PROCEDURE getColDistValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2, colName VARCHAR2);
 
 END db_Utilities_pkg;
 
 CREATE OR REPLACE PACKAGE BODY db_Utilities_pkg AS
+
+PROCEDURE getColDistValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2, colName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT UNIQUE '||colName|| ' FROM '||tableName;
+    OPEN c_return FOR sql_text;
+END getColDistValues;
+
+
+
+PROCEDURE getPKs(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT cols.table_name, cols.column_name, cols.position, cons.status, cons.owner '||
+                    'FROM all_constraints cons, all_cons_columns cols '||
+                    'WHERE cols.table_name = '''||tableName||''' '||
+                    'AND cons.constraint_type = ''P'' '||
+                    'AND cons.constraint_name = cols.constraint_name '||
+                    'AND cons.owner = cols.owner '||
+                    'ORDER BY cols.table_name, cols.position';
+    OPEN c_return FOR sql_text;
+END getPKs;
+
+PROCEDURE getEvrtng(c_return OUT SYS_REFCURSOR, tableName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT * FROM '||tableName;
+    OPEN c_return FOR sql_text;
+END getEvrtng;
 
 PROCEDURE getFKOrigColName(c_return OUT SYS_REFCURSOR, originalTable VARCHAR2, tableName VARCHAR2, originalColumn VARCHAR2, testingColumnFK VARCHAR2) AS
 
