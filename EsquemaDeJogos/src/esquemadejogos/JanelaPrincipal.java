@@ -161,7 +161,7 @@ public class JanelaPrincipal {
                         insertImage(img, selectedGame);
                     }
                     catch(IOException e1) {
-                        jtAreaDeStatus.setText(e1.getStackTrace().toString());
+                        jtAreaDeStatus.setText(e1.toString());
                     }
                 }
         });
@@ -197,7 +197,7 @@ public class JanelaPrincipal {
                 DefaultTableModel m =  (DefaultTableModel) target.getModel();
                 Vector<String> r = (Vector<String>) m.getDataVector().get(row);
                 selectedGame = r.get(column);
-                BufferedImage img = getImage(r.get(2));
+                BufferedImage img = getImage(r.get(4));
                 ImageIcon icon=new ImageIcon(img); // ADDED
                 label.setIcon(icon); // ADDED
 
@@ -281,10 +281,10 @@ public class JanelaPrincipal {
         }
         catch (SQLException ex) {
             ex.printStackTrace();
-            jtAreaDeStatus.setText(ex.getStackTrace().toString());
+            jtAreaDeStatus.setText("Erro ao pegar imagem - "+ex.getStackTrace().toString());
         } catch (IOException ex) {
             ex.printStackTrace();
-            jtAreaDeStatus.setText(ex.getStackTrace().toString());
+            jtAreaDeStatus.setText("Erro de IO - "+ex.getStackTrace().toString());
         }
         return null;
     }

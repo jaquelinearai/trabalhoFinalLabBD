@@ -121,8 +121,7 @@ public class DBFuncionalidades {
             return metaData;
         }
         catch (SQLException ex) {
-            ex.printStackTrace();
-            jtAreaDeStatus.setText(ex.getStackTrace().toString());
+            jtAreaDeStatus.setText("Erro ao pegar metadados - "+ex.getStackTrace().toString());
         }
         return metaData;
     }
@@ -147,7 +146,7 @@ public class DBFuncionalidades {
             rs.close();
             st.close();
         } catch (SQLException ex) {
-            jtAreaDeStatus.setText("Erro na consulta");
+            jtAreaDeStatus.setText("Erro na consulta - "+ex.toString());
         }        
     }
     
@@ -173,7 +172,7 @@ public class DBFuncionalidades {
             st.close();
         }
         catch (Exception ex) {
-            jtAreaDeStatus.setText("Erro ao pegar numero de colunas");
+            jtAreaDeStatus.setText("Erro ao pegar numero de colunas - "+ex.toString());
         }
         
         return a;
@@ -194,7 +193,7 @@ public class DBFuncionalidades {
             rs = (ResultSet)st.getObject(1);
         }
         catch (Exception ex) {
-            jtAreaDeStatus.setText("Erro ao pegar nome de colunas");
+            jtAreaDeStatus.setText("Erro ao pegar nome de colunas - "+ex.toString());
         }
         
         return rs;
@@ -236,7 +235,7 @@ public class DBFuncionalidades {
             st.close();
         }
         catch (Exception ex) {
-            jtAreaDeStatus.setText("Erro ao verificar se existe check");
+            jtAreaDeStatus.setText("Erro ao verificar se existe check - "+ex.toString());
         }
         
         if(containsCheck(isCheck, columnName))
@@ -290,7 +289,7 @@ public class DBFuncionalidades {
             st.close();
         }
         catch (Exception ex) {
-            jtAreaDeStatus.setText("Erro ao verificar se existe check");
+            jtAreaDeStatus.setText("Erro ao verificar se existe check - "+ex.toString());
         }
         
         return checksValues;
@@ -328,7 +327,7 @@ public class DBFuncionalidades {
                     return true;
             }
         } catch (Exception ex) {
-            jtAreaDeStatus.setText("Erro ao verificar se eh FK"+ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao verificar se eh FK - "+ex.getMessage());
         }
         
         return false;
@@ -391,7 +390,7 @@ public class DBFuncionalidades {
                 }
             }
         } catch (Exception ex) {
-            jtAreaDeStatus.setText("Erro ao pegar valores de FK "+ex.getMessage());
+            jtAreaDeStatus.setText("Erro ao pegar valores de FK - "+ex.getMessage());
         }
         
         return fkValues;
