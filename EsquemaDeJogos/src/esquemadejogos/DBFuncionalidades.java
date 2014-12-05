@@ -403,6 +403,10 @@ public class DBFuncionalidades {
             jtAreaDeStatus.setText(ex.getMessage());
         }
     }
+    
+    public void removeValuesBD(String tableName, String strInsert){
+        
+    }
      
     /*Cria a JTable com os dados resultantes do select na tabela escolhida*/
     /*Por enquanto, soh imprime os dados na tela*/

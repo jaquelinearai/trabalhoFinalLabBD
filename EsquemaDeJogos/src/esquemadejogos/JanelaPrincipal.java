@@ -75,6 +75,7 @@ public class JanelaPrincipal {
     JPanelComponents pc;
     JButton buttonInsert;
     JButton buttonImage;
+    JButton buttonRemove;
     FileInputStream img;
     Boolean isOnDDL;
     Boolean isOnSel;
@@ -350,6 +351,91 @@ public class JanelaPrincipal {
         }); 
     }
      
+    private void createDeleteTab(String table)
+    {
+        /*Deleta o panel anterior para setar as novas informacoes*/
+        pPainelDeExcluirDados.removeAll();
+        
+        Vector<String> values;
+        Vector<JPanelComponents> panelComponents = new Vector<JPanelComponents>();
+        
+        /*Seta as novas informacoes*/
+        int nColunas = bd.numeroDeColunas(table);
+        ResultSet rsNomeColunas = bd.nomeDeColunas(table);
+        
+        pPainelDeExcluirDados.setLayout(new GridLayout(nColunas+1, 2));
+        
+        try{
+            while (rsNomeColunas.next()) {
+                
+                pc = new JPanelComponents();
+                
+                pPainelDeExcluirDados.add(new JLabel(rsNomeColunas.getString("COLUMN_NAME")));
+               
+                /* Eh uma clausula de check */
+                if (bd.isCheck(table, rsNomeColunas.getString("COLUMN_NAME"))){
+                    pc.cb = new JComboBox(bd.valuesCheck (table, rsNomeColunas.getString("COLUMN_NAME")));
+                    pc.columnName = rsNomeColunas.getString("COLUMN_NAME");
+                    pPainelDeExcluirDados.add(pc.cb);
+                    panelComponents.add(pc);
+                }
+                
+                else if (bd.isFK (table, rsNomeColunas.getString("COLUMN_NAME"))) {
+                    pc.cb = new JComboBox(bd.valuesFK(table, rsNomeColunas.getString("COLUMN_NAME")));
+                    pc.columnName = rsNomeColunas.getString("COLUMN_NAME");
+                    pPainelDeExcluirDados.add(pc.cb);
+                    panelComponents.add(pc);
+                }
+                /* Eh um campo normal */
+                else {
+                    pc.tf = new JTextField("Digite aqui");
+                    pc.columnName = rsNomeColunas.getString("COLUMN_NAME");
+                    pPainelDeExcluirDados.add(pc.tf);
+                    panelComponents.add(pc);
+                }
+            }
+            rsNomeColunas.close();
+        } catch(Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        
+        buttonRemove = new JButton("Remover");
+        pPainelDeExcluirDados.add(buttonRemove);
+        
+         buttonRemove.addActionListener(new ActionListener() {
+            
+            // Inserindo
+            public void actionPerformed(ActionEvent e)
+            {
+                String strRemove = new String("");
+                String strTF;
+
+                for(int i = 0; i < nColunas; i++){
+                    if(panelComponents.elementAt(i).cb == null) {
+                        strTF = panelComponents.elementAt(i).tf.getText();
+                        System.out.println(strTF);
+                    }
+                    
+                    else {
+                        strTF = (String) panelComponents.elementAt(i).cb.getSelectedItem();
+                        System.out.println(strTF);
+                    }
+                    
+                    if(i < nColunas-1)
+                        strRemove += "'"+strTF+"', ";
+                    
+                    else
+                        strRemove += "'"+strTF+"'";
+                }
+                
+                System.out.println(strRemove);
+                bd.removeValuesBD(table, strRemove);
+                
+                //E se for date
+            }
+        }); 
+    }
+    
     private void DefineEventos() {
         jc.addActionListener(
                 new ActionListener() {
@@ -373,6 +459,8 @@ public class JanelaPrincipal {
                     /*Cria os campos de insercao*/
                     createInsertTab((String) jcTemp.getSelectedItem());
                 
+                    /*Cria os campos para delecao*/
+                    createDeleteTab((String) jcTemp.getSelectedItem());
                     /*if(bd.connected)
                     {
                         getDDL((String) jcTemp.getSelectedItem());
