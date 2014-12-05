@@ -55,6 +55,7 @@ public class JanelaPrincipal {
     JPanel teste;
     JComboBox jc;
     JTextArea jtAreaDeStatus;
+    JTextArea jtAreaGameDesc;
     JTextArea jTAreaDDL;
     JTextField username;
     JTextField password;
@@ -203,7 +204,38 @@ public class JanelaPrincipal {
             }
         });
         
+        gameDescriptionTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e){
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                DefaultTableModel m =  (DefaultTableModel) target.getModel();
+                Vector<String> r = (Vector<String>) m.getDataVector().get(row);
+                selectedGame = r.get(column);
+                System.out.println(selectedGame);
+                
+                try {
+                    comando = bd.connection.prepareCall("{ call pkg_atualizaJogo.procedure_descricaoJogo(?, ?) }");
+                     comando.setString(1, selectedGame);
+                      comando.registerOutParameter(2, java.sql.Types.VARCHAR);
+                     comando.execute();
+                     String str = comando.getString(2);
+                     jtAreaGameDesc.setText(str);
+                } catch (SQLException ex) {
+                    Logger.getLogger(JanelaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                
+                
+                
+                
+            }
+        });
+        
+        jtAreaGameDesc = new JTextArea();
         pPainelDeResumoDeJogos.add(panelGameDescription);
+        pPainelDeResumoDeJogos.add(jtAreaGameDesc);
         tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos"); 
         //Cria a tab de jogos
         pPainelDeJogos.add(panelJogos);
