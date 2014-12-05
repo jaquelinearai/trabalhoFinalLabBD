@@ -160,7 +160,9 @@ public class JanelaPrincipal {
                         img = new FileInputStream(file);
                         insertImage(img, selectedGame);
                     }
-                    catch(IOException e1) {}
+                    catch(IOException e1) {
+                        jtAreaDeStatus.setText(e1.getStackTrace().toString());
+                    }
                 }
         });
     
@@ -224,12 +226,9 @@ public class JanelaPrincipal {
                      jtAreaGameDesc.setText(str);
                 } catch (SQLException ex) {
                     Logger.getLogger(JanelaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+                    jtAreaDeStatus.setText(ex.getStackTrace().toString());
                 }
-                
-                
-                
-                
-                
+          
             }
         });
         
@@ -263,7 +262,7 @@ public class JanelaPrincipal {
             comando.execute();
         }
         catch (SQLException ex) {
-            ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         } 
         
     }
@@ -282,8 +281,10 @@ public class JanelaPrincipal {
         }
         catch (SQLException ex) {
             ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         } catch (IOException ex) {
             ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         return null;
     }
@@ -359,6 +360,7 @@ public class JanelaPrincipal {
             rsNomeColunas.close();
         } catch(Exception ex) {
             System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         
         buttonInsert = new JButton("Inserir");
@@ -452,6 +454,7 @@ public class JanelaPrincipal {
             
         } catch(Exception ex) {
             System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         
         buttonRemove = new JButton("Remover");

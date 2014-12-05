@@ -120,6 +120,7 @@ public class DBFuncionalidades {
         }
         catch (SQLException ex) {
             ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         return metaData;
     }
