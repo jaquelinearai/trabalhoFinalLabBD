@@ -358,43 +358,51 @@ public class JanelaPrincipal {
         
         Vector<String> values;
         Vector<JPanelComponents> panelComponents = new Vector<JPanelComponents>();
-        
+        Vector<String> columnNames = new Vector<String>();
         /*Seta as novas informacoes*/
         int nColunas = bd.numeroDeColunas(table);
         ResultSet rsNomeColunas = bd.nomeDeColunas(table);
         
         pPainelDeExcluirDados.setLayout(new GridLayout(nColunas+1, 2));
-        
         try{
             while (rsNomeColunas.next()) {
-                
-                pc = new JPanelComponents();
-                
-                pPainelDeExcluirDados.add(new JLabel(rsNomeColunas.getString("COLUMN_NAME")));
-               
-                /* Eh uma clausula de check */
-                if (bd.isCheck(table, rsNomeColunas.getString("COLUMN_NAME"))){
-                    pc.cb = new JComboBox(bd.valuesCheck (table, rsNomeColunas.getString("COLUMN_NAME")));
-                    pc.columnName = rsNomeColunas.getString("COLUMN_NAME");
-                    pPainelDeExcluirDados.add(pc.cb);
-                    panelComponents.add(pc);
-                }
-                
-                else if (bd.isFK (table, rsNomeColunas.getString("COLUMN_NAME"))) {
-                    pc.cb = new JComboBox(bd.valuesFK(table, rsNomeColunas.getString("COLUMN_NAME")));
-                    pc.columnName = rsNomeColunas.getString("COLUMN_NAME");
-                    pPainelDeExcluirDados.add(pc.cb);
-                    panelComponents.add(pc);
-                }
-                /* Eh um campo normal */
-                else {
-                    pc.tf = new JTextField("Digite aqui");
-                    pc.columnName = rsNomeColunas.getString("COLUMN_NAME");
-                    pPainelDeExcluirDados.add(pc.tf);
-                    panelComponents.add(pc);
-                }
+                columnNames.add(rsNomeColunas.getString("COLUMN_NAME"));
             }
             rsNomeColunas.close();
+            CallableStatement st;
+            try {
+                for(int i = 0; i < columnNames.size(); i++){
+                    pc = new JPanelComponents();
+                    
+                    st = bd.connection.prepareCall("{ call db_Utilities_pkg.getColDistValues(?, ?, ?) }");
+
+                    st.registerOutParameter(1, OracleTypes.CURSOR);
+                    st.setString(2, table);
+                    st.setString(3, columnNames.get(i));
+                    st.setFetchSize(100);
+
+                    st.executeQuery();
+                    values = new Vector<String>();
+                    values.add("Selecione uma opcao");
+                    pPainelDeExcluirDados.add(new JLabel(columnNames.get(i)));
+                    pc.cb = new JComboBox(values);
+                    pc.columnName = columnNames.get(i);
+                    
+                    ResultSet rs = (ResultSet) st.getObject(1);
+                    while (rs.next()) {
+                        pc.cb.addItem(rs.getString(columnNames.get(i)));
+                    }
+                    rs.close();
+                    st.close();
+                    pPainelDeExcluirDados.add(pc.cb);
+                    panelComponents.add(pc);
+                }
+            } catch (Exception ex) {
+                jtAreaDeStatus.setText("Erro ao pegar dados para exclusao"+ex.getMessage());
+            }
+            
+
+            
         } catch(Exception ex) {
             System.out.println(ex.getMessage());
         }
@@ -409,7 +417,8 @@ public class JanelaPrincipal {
             {
                 String strRemove = new String("");
                 String strTF;
-
+                ArrayList<String> colNames = new ArrayList<>();
+                ArrayList<String> colValues = new ArrayList<>();
                 for(int i = 0; i < nColunas; i++){
                     if(panelComponents.elementAt(i).cb == null) {
                         strTF = panelComponents.elementAt(i).tf.getText();
@@ -422,7 +431,7 @@ public class JanelaPrincipal {
                     }
                     
                     if(i < nColunas-1)
-                        strRemove += "'"+strTF+"', ";
+                        colValues.add(strTF);
                     
                     else
                         strRemove += "'"+strTF+"'";

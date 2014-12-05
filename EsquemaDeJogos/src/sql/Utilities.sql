@@ -15,10 +15,18 @@ PROCEDURE getCheck(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
 PROCEDURE getFK(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
 PROCEDURE getFKValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2);
 PROCEDURE getFKOrigColName(c_return OUT SYS_REFCURSOR, originalTable VARCHAR2, tableName VARCHAR2, originalColumn VARCHAR2, testingColumnFK VARCHAR2);
+PROCEDURE getColDistValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2, colName VARCHAR2);
 
 END db_Utilities_pkg;
 
 CREATE OR REPLACE PACKAGE BODY db_Utilities_pkg AS
+
+PROCEDURE getColDistValues(c_return OUT SYS_REFCURSOR, tableName VARCHAR2, colName VARCHAR2) AS
+
+BEGIN
+    sql_text := 'SELECT UNIQUE '||colName|| ' FROM '||tableName;
+    OPEN c_return FOR sql_text;
+END getColDistValues;
 
 PROCEDURE getFKOrigColName(c_return OUT SYS_REFCURSOR, originalTable VARCHAR2, tableName VARCHAR2, originalColumn VARCHAR2, testingColumnFK VARCHAR2) AS
 
