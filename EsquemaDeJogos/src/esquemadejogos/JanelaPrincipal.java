@@ -55,6 +55,7 @@ public class JanelaPrincipal {
     JPanel teste;
     JComboBox jc;
     JTextArea jtAreaDeStatus;
+    JTextArea jtAreaGameDesc;
     JTextArea jTAreaDDL;
     JTextField username;
     JTextField password;
@@ -159,7 +160,9 @@ public class JanelaPrincipal {
                         img = new FileInputStream(file);
                         insertImage(img, selectedGame);
                     }
-                    catch(IOException e1) {}
+                    catch(IOException e1) {
+                        jtAreaDeStatus.setText(e1.getStackTrace().toString());
+                    }
                 }
         });
     
@@ -203,7 +206,35 @@ public class JanelaPrincipal {
             }
         });
         
+        gameDescriptionTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e){
+                JTable target = (JTable)e.getSource();
+                int row = target.getSelectedRow();
+                int column = target.getSelectedColumn();
+                DefaultTableModel m =  (DefaultTableModel) target.getModel();
+                Vector<String> r = (Vector<String>) m.getDataVector().get(row);
+                selectedGame = r.get(column);
+                System.out.println(selectedGame);
+                
+                try {
+                    comando = bd.connection.prepareCall("{ call pkg_atualizaJogo.procedure_descricaoJogo(?, ?) }");
+                     comando.setString(1, selectedGame);
+                      comando.registerOutParameter(2, java.sql.Types.VARCHAR);
+                     comando.execute();
+                     String str = comando.getString(2);
+                     jtAreaGameDesc.setText(str);
+                } catch (SQLException ex) {
+                    Logger.getLogger(JanelaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+                    jtAreaDeStatus.setText(ex.getStackTrace().toString());
+                }
+          
+            }
+        });
+        
+        jtAreaGameDesc = new JTextArea();
         pPainelDeResumoDeJogos.add(panelGameDescription);
+        pPainelDeResumoDeJogos.add(jtAreaGameDesc);
         tabbedPane.add(pPainelDeResumoDeJogos, "Resumo dos jogos"); 
         //Cria a tab de jogos
         pPainelDeJogos.add(panelJogos);
@@ -231,7 +262,7 @@ public class JanelaPrincipal {
             comando.execute();
         }
         catch (SQLException ex) {
-            ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         } 
         
     }
@@ -250,8 +281,10 @@ public class JanelaPrincipal {
         }
         catch (SQLException ex) {
             ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         } catch (IOException ex) {
             ex.printStackTrace();
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         return null;
     }
@@ -327,6 +360,7 @@ public class JanelaPrincipal {
             rsNomeColunas.close();
         } catch(Exception ex) {
             System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         
         buttonInsert = new JButton("Inserir");
@@ -420,6 +454,7 @@ public class JanelaPrincipal {
             
         } catch(Exception ex) {
             System.out.println(ex.getMessage());
+            jtAreaDeStatus.setText(ex.getStackTrace().toString());
         }
         
         buttonRemove = new JButton("Remover");
