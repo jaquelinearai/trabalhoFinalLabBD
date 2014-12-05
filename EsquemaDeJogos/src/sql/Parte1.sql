@@ -1,10 +1,11 @@
+
+--Array that will hold the name from the attributes 
+CREATE OR REPLACE TYPE t_attNameArray IS VARRAY(15) OF varchar2(40);
+--Array that will hold the values from the attributes
+CREATE OR REPLACE TYPE t_attValueArray IS VARRAY(15) OF varchar2(40);
 --Package declaration
 CREATE OR REPLACE PACKAGE db_Operations_pkg AS
 
---Array that will hold the name from the attributes 
-TYPE t_attNameArray IS VARRAY(15) OF varchar2(40);
---Array that will hold the values from the attributes
-TYPE t_attValueArray IS VARRAY(15) OF varchar2(40);
 --Text for the operation
 sql_text VARCHAR2(500);
 --Counter variable
@@ -18,7 +19,7 @@ TYPE t_colNamesArray IS VARRAY(20) OF ALL_TAB_COLUMNS.column_name%TYPE;
 PROCEDURE select_procedure(c_return OUT SYS_REFCURSOR, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray);
 PROCEDURE insert_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_name t_attNameArray, p_newValue t_attValueArray);
 PROCEDURE update_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray);
-PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray, p_operation VARCHAR2);
+PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray);
 
 END db_Operations_pkg;
 
@@ -247,7 +248,7 @@ BEGIN
 
 END update_procedure;
 
-PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray, p_name t_attNameArray, p_newValue t_attValueArray, p_operation VARCHAR2) AS
+PROCEDURE delete_procedure(m_return OUT VARCHAR2, p_table VARCHAR2, p_keyAttNames t_attNameArray, p_keyValue t_attValueArray) AS
 c_pColTypes SYS_REFCURSOR; 
 BEGIN
  
@@ -295,6 +296,7 @@ BEGIN
 		sql_text := sql_text ||' AND '; 
 	END LOOP;	
 	--Execute the delete command
+        m_return := 'Executar';
 	EXECUTE IMMEDIATE sql_text;
 	m_return := 'Foram deletados: ' || SQL%ROWCOUNT || ' dados';
   END delete_procedure;
